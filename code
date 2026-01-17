@@ -1,0 +1,69 @@
+This project is a simple  robot that detects obstacles in front of it using an ultrasonic sensor.
+The robot continuously measures the distance of objects ahead and moves forward when the path is clear.
+If an obstacle comes within a danger(100cm) range, the robot stops immediately and alerts the user using a buzzer and LCD display.
+Components Used
+Hardware:
+Arduino UNO ,Ultrasonic Sensor (HC-SR04) ,16×2 LCD Display (I2C) ,DC Motors,Motor Driver ,Piezo Buzzer,Power Supply (Battery)
+Software:
+Arduino IDE,LiquidCrystal_I2C Library
+code :
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+// Ultrasonic pins
+#define trigPin 9
+#define echoPin 10
+// Motor pins
+#define motorLeft 2
+#define motorRight 3
+// Buzzer pin
+#define buzzer 11
+long duration;
+int distance;
+void setup() {
+  pinMode(motorLeft, OUTPUT);
+  pinMode(motorRight, OUTPUT);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(buzzer, OUTPUT);
+Serial.begin(9600);
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0,0);
+  lcd.print("Bot Starting...");
+  delay(1500);
+  lcd.clear();
+}
+void loop() {
+  // Ultrasonic trigger
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH, 30000); // timeout
+ if (duration == 0)
+    distance = 400;
+  else
+    distance = duration * 0.034 / 2;
+ Serial.print("Distance: ");
+  Serial.println(distance);
+lcd.setCursor(0,0);
+  lcd.print("Dist: ");
+  lcd.print(distance);
+  lcd.print(" cm   ");
+ if (distance > 100) {
+    digitalWrite(motorLeft, HIGH);
+    digitalWrite(motorRight, HIGH);
+    noTone(buzzer);
+ lcd.setCursor(0,1);
+    lcd.print("Moving Forward ");
+  } else {
+    digitalWrite(motorLeft, LOW);
+    digitalWrite(motorRight, LOW);
+    tone(buzzer, 1000);   // 1kHz
+  lcd.setCursor(0,1);
+    lcd.print("Obstacle Alert!");
+  }
+delay(200);
+}
